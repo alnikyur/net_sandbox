@@ -1,9 +1,8 @@
-[gd_scene load_steps=10 format=3 uid="uid://dnbmhkbanue41"]
+[gd_scene load_steps=9 format=3 uid="uid://dnbmhkbanue41"]
 
 [ext_resource type="Script" path="res://scenes/lobby/lobby.gd" id="1_gchuo"]
 [ext_resource type="Texture2D" uid="uid://bdsf2vdf41fyv" path="res://assets/tileset/TX Tileset Grass.png" id="1_suqbc"]
 [ext_resource type="PackedScene" uid="uid://bgd7x8pb5q3o6" path="res://scenes/player/player.tscn" id="2_bykhq"]
-[ext_resource type="PackedScene" uid="uid://ersllfnch0in" path="res://scenes/items/coin.tscn" id="2_q5v82"]
 [ext_resource type="Texture2D" uid="uid://cjluun41m0atl" path="res://assets/tileset/Dungeon_Tileset.png" id="4_lc3sa"]
 [ext_resource type="AudioStream" uid="uid://ck2rlgxg43xya" path="res://assets/sounds/bit-beats-1-168243.mp3" id="5_dr1s3"]
 
@@ -1327,7 +1326,6 @@ sources/1 = SubResource("TileSetAtlasSource_miqod")
 
 [node name="Lobby" type="Node2D"]
 script = ExtResource("1_gchuo")
-coin_scene = ExtResource("2_q5v82")
 player_scene = ExtResource("2_bykhq")
 
 [node name="TileMap" type="TileMap" parent="."]

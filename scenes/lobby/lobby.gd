@@ -1,12 +1,27 @@
 extends Node2D
 
+@export var coin_scene: PackedScene
+@export var num_coins: int = 50 # Количество монеток
+@export var field_size: Vector2 = Vector2(1920, 1080) # Размер поля
+
 @export var player_scene: PackedScene # Сцена игрока
 @onready var players = {} # Хранит игроков (id → узел игрока)
+@onready var audio_player = $AudioPlayer
+
+var current_index = randf()
+
+var audio_files = [
+	preload("res://assets/sounds/bit-beats-1-168243.mp3"),
+	preload("res://assets/sounds/falselyclaimed-bit-beats-3-168873.mp3"),
+	preload("res://assets/sounds/that-game-arcade-medium-236110.mp3")
+]
 
 func _ready():
 	multiplayer.connect("peer_connected", Callable(self, "_on_player_connected"))
 	multiplayer.connect("peer_disconnected", Callable(self, "_on_player_disconnected"))
 	setup_network()
+	play_next()
+	scatter_coins()
 
 func setup_network():
 	if Global.is_server:
@@ -100,4 +115,30 @@ func register_player_name(id, name):
 		print("Локальный игрок обновил своё имя на:", name)
 
 
+func play_next():
+	if current_index < audio_files.size():
+		audio_player.stream = audio_files[current_index] # Устанавливаем следующий аудиофайл
+		audio_player.play() # Запускаем воспроизведение
+		print("Играем файл:", audio_files[current_index])
+		current_index += 1 # Увеличиваем индекс для следующего файла
+	else:
+		print("Все файлы воспроизведены.")
+		current_index = 0 # Сбрасываем индекс, если нужно повторить цикл
 
+
+func _on_audio_player_finished():
+	play_next()
+
+func scatter_coins():
+	for i in range(num_coins):
+		# Создаём инстанс монетки
+		var coin = coin_scene.instantiate()
+		
+		# Генерируем случайные координаты в пределах поля
+		var random_x = randf() * field_size.x
+		var random_y = randf() * field_size.y
+		coin.position = Vector2(random_x, random_y)
+		
+		# Добавляем монетку в сцену
+		add_child(coin)
+		print("Монетка добавлена на позицию:", coin.position)

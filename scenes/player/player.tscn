@@ -1,7 +1,8 @@
-[gd_scene load_steps=25 format=3 uid="uid://bgd7x8pb5q3o6"]
+[gd_scene load_steps=26 format=3 uid="uid://bgd7x8pb5q3o6"]
 
 [ext_resource type="Script" path="res://scenes/player/player.gd" id="1_4agke"]
 [ext_resource type="Texture2D" uid="uid://bkmnif3s2yyof" path="res://assets/player/knight.png" id="2_4dnja"]
+[ext_resource type="FontFile" uid="uid://by5ccwnnh6ukj" path="res://assets/fonts/Firlest-Regular.otf" id="3_nwigd"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_ldp7v"]
 atlas = ExtResource("2_4dnja")
@@ -159,7 +160,7 @@ animations = [{
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_45glo"]
 size = Vector2(14, 18)
 
-[node name="Player" type="CharacterBody2D"]
+[node name="Player" type="CharacterBody2D" groups=["Player"]]
 script = ExtResource("1_4agke")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
@@ -179,7 +180,10 @@ zoom = Vector2(3, 3)
 [node name="NameLabel" type="Label" parent="."]
 texture_filter = 1
 offset_left = -64.0
-offset_top = -32.0
+offset_top = -24.0
 offset_right = 64.0
-offset_bottom = -9.0
+offset_bottom = -10.0
+theme_override_fonts/font = ExtResource("3_nwigd")
+theme_override_font_sizes/font_size = 15
+text = "Maestro"
 horizontal_alignment = 1
