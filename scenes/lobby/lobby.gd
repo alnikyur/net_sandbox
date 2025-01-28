@@ -39,16 +39,17 @@ func await_connection():
 func _on_player_connected(id):
 	if multiplayer.is_server():
 		print("Игрок подключён с ID:", id)
-		spawn_player(id)
-		# Рассылаем информацию о существующих игроках новому клиенту
+		spawn_player(id) # Сначала создаём игрока
+		# Рассылаем информацию о всех игроках новому клиенту
 		for existing_id in players.keys():
 			rpc_id(id, "spawn_player", existing_id)
 			rpc_id(id, "register_player_name", existing_id, players[existing_id].player_name)
-		# Рассылаем информацию о новом игроке всем остальным клиентам
+		# Рассылаем информацию о новом игроке всем остальным
 		for peer_id in multiplayer.get_peers():
 			if peer_id != id:
 				rpc_id(peer_id, "spawn_player", id)
 				rpc_id(peer_id, "register_player_name", id, players[id].player_name)
+
 
 
 
@@ -75,8 +76,15 @@ func spawn_player(id):
 func register_player_name(id, name):
 	if not players.has(id):
 		print("Игрок с ID", id, "не найден. Создаём...")
-		spawn_player(id)
-	players[id].set_player_name(name)
+		spawn_player(id) # Создаём игрока, если он не существует
+	players[id].set_player_name(name) # Устанавливаем имя игрока
 	print("Имя игрока с ID", id, "обновлено на:", name)
+
+	# Если это локальный игрок, обновляем его глобальное имя
+	if id == multiplayer.get_unique_id():
+		Global.player_name = name
+		print("Локальное имя обновлено на:", name)
+
+
 
 

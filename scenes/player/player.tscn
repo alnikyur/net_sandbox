@@ -161,7 +161,6 @@ size = Vector2(14, 18)
 
 [node name="Player" type="CharacterBody2D"]
 script = ExtResource("1_4agke")
-move_speed = null
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 texture_filter = 1
