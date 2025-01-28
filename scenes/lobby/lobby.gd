@@ -38,13 +38,18 @@ func await_connection():
 
 func _on_player_connected(id):
 	if multiplayer.is_server():
-		print("Игрок подключён с ID: ", id)
+		print("Игрок подключён с ID:", id)
 		spawn_player(id)
-		# Рассылаем информацию о сервере новому клиенту
+		# Рассылаем информацию о существующих игроках новому клиенту
 		for existing_id in players.keys():
-			if existing_id != id:
-				rpc_id(id, "spawn_player", existing_id)
-				rpc_id(id, "register_player_name", existing_id, players[existing_id].player_name)
+			rpc_id(id, "spawn_player", existing_id)
+			rpc_id(id, "register_player_name", existing_id, players[existing_id].player_name)
+		# Рассылаем информацию о новом игроке всем остальным клиентам
+		for peer_id in multiplayer.get_peers():
+			if peer_id != id:
+				rpc_id(peer_id, "spawn_player", id)
+				rpc_id(peer_id, "register_player_name", id, players[id].player_name)
+
 
 
 func _on_player_disconnected(id):
@@ -63,13 +68,15 @@ func spawn_player(id):
 	player.set_multiplayer_authority(id)
 	add_child(player)
 	players[id] = player
-	print("Создан игрок с ID: ", id, " Владелец: ", player.get_multiplayer_authority())
+	print("Создан игрок с ID:", id, " Владелец:", player.get_multiplayer_authority())
+
 
 @rpc("any_peer")
 func register_player_name(id, name):
-	if players.has(id):
-		players[id].set_player_name(name)
-		print("Имя зарегистрировано: ", name)
-		if id == multiplayer.get_unique_id():
-			print("Ваше имя обновлено на: ", name)
+	if not players.has(id):
+		print("Игрок с ID", id, "не найден. Создаём...")
+		spawn_player(id)
+	players[id].set_player_name(name)
+	print("Имя игрока с ID", id, "обновлено на:", name)
+
 
