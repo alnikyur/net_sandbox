@@ -16,17 +16,25 @@ func setup_network():
 		print("Сервер запущен на порту 12345!")
 		# Создаём игрока для сервера
 		spawn_player(multiplayer.get_unique_id())
-		# Устанавливаем имя для игрока сервера
 		players[multiplayer.get_unique_id()].set_player_name(Global.player_name)
 	else:
 		var client = ENetMultiplayerPeer.new()
 		client.create_client(Global.server_ip, 12345)
 		multiplayer.multiplayer_peer = client
 		print("Подключение к серверу по адресу: ", Global.server_ip)
-		# Создаём игрока клиента
-		spawn_player(multiplayer.get_unique_id())
-		# Отправляем имя на сервер
-		rpc_id(1, "register_player_name", multiplayer.get_unique_id(), Global.player_name)
+		# Ожидание подключения клиента
+		await await_connection()
+
+func await_connection():
+	while multiplayer.multiplayer_peer.get_connection_status() != MultiplayerPeer.CONNECTION_CONNECTED:
+		await get_tree().process_frame # Ждём следующего кадра
+	print("Успешно подключено к серверу!")
+	spawn_player(multiplayer.get_unique_id())
+	rpc_id(1, "register_player_name", multiplayer.get_unique_id(), Global.player_name)
+
+
+
+
 
 func _on_player_connected(id):
 	if multiplayer.is_server():
@@ -62,3 +70,6 @@ func register_player_name(id, name):
 	if players.has(id):
 		players[id].set_player_name(name)
 		print("Имя зарегистрировано: ", name)
+		if id == multiplayer.get_unique_id():
+			print("Ваше имя обновлено на: ", name)
+
