@@ -29,27 +29,26 @@ func await_connection():
 	while multiplayer.multiplayer_peer.get_connection_status() != MultiplayerPeer.CONNECTION_CONNECTED:
 		await get_tree().process_frame # Ждём следующего кадра
 	print("Успешно подключено к серверу!")
-	spawn_player(multiplayer.get_unique_id())
+	print("Отправляем имя на сервер:", Global.player_name)
 	rpc_id(1, "register_player_name", multiplayer.get_unique_id(), Global.player_name)
-
-
-
-
 
 func _on_player_connected(id):
 	if multiplayer.is_server():
 		print("Игрок подключён с ID:", id)
-		spawn_player(id) # Сначала создаём игрока
-		# Рассылаем информацию о всех игроках новому клиенту
-		for existing_id in players.keys():
-			rpc_id(id, "spawn_player", existing_id)
-			rpc_id(id, "register_player_name", existing_id, players[existing_id].player_name)
-		# Рассылаем информацию о новом игроке всем остальным
+		spawn_player(id) # Сначала создаём игрока на сервере
+
+		# Рассылаем всем остальным клиентам информацию о новом игроке
 		for peer_id in multiplayer.get_peers():
 			if peer_id != id:
 				rpc_id(peer_id, "spawn_player", id)
+				await get_tree().process_frame # Ждём следующий кадр, чтобы узел успел создаться
 				rpc_id(peer_id, "register_player_name", id, players[id].player_name)
 
+		# Отправляем новому игроку информацию о сервере
+		for existing_id in players.keys():
+			rpc_id(id, "spawn_player", existing_id)
+			await get_tree().process_frame # Ждём следующий кадр
+			rpc_id(id, "register_player_name", existing_id, players[existing_id].player_name)
 
 
 
@@ -65,11 +64,26 @@ func spawn_player(id):
 		return
 	var player = player_scene.instantiate()
 	player.name = "Player_" + str(id)
-	player.position = Vector2(randf() * 400, randf() * 400) # Случайная позиция
+	player.position = Vector2(randf() * 400, randf() * 400)
 	player.set_multiplayer_authority(id)
 	add_child(player)
 	players[id] = player
-	print("Создан игрок с ID:", id, " Владелец:", player.get_multiplayer_authority())
+	print("Игрок создан с ID:", id, " Имя узла:", player.name)
+
+	# Если это локальный игрок
+	if id == multiplayer.get_unique_id():
+		player.set_player_name(Global.player_name)
+		print("Локальное имя игрока установлено при создании:", Global.player_name)
+
+		# Активируем камеру
+		var camera = player.get_node("Camera2D")
+		if camera is Camera2D:
+			camera.make_current()
+			print("Камера активирована для локального игрока")
+		else:
+			print("Ошибка: Узел Camera2D не найден или имеет неверный тип")
+
+
 
 
 @rpc("any_peer")
@@ -80,11 +94,10 @@ func register_player_name(id, name):
 	players[id].set_player_name(name) # Устанавливаем имя игрока
 	print("Имя игрока с ID", id, "обновлено на:", name)
 
-	# Если это локальный игрок, обновляем его глобальное имя
+	# Если это локальный игрок, обновляем глобальное имя
 	if id == multiplayer.get_unique_id():
 		Global.player_name = name
-		print("Локальное имя обновлено на:", name)
-
+		print("Локальный игрок обновил своё имя на:", name)
 
 
 
