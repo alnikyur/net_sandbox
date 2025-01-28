@@ -31,17 +31,29 @@ text = "Start server"
 
 [node name="EnterIP" type="LineEdit" parent="VBoxContainer"]
 layout_mode = 2
-text = "127.0.0.1"
+placeholder_text = "Enter IP"
 alignment = 1
 
 [node name="NameInput" type="LineEdit" parent="VBoxContainer"]
 layout_mode = 2
-placeholder_text = "Name"
+placeholder_text = "Player name"
 alignment = 1
 
 [node name="ConnectToServer" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 text = "Connect to server"
 
+[node name="Exit" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Exit"
+
+[node name="Popup" type="Popup" parent="."]
+visible = true
+
+[node name="Label" type="Label" parent="Popup"]
+offset_right = 40.0
+offset_bottom = 23.0
+
 [connection signal="pressed" from="VBoxContainer/RunServer" to="." method="_on_run_server_pressed"]
 [connection signal="pressed" from="VBoxContainer/ConnectToServer" to="." method="_on_connect_to_server_pressed"]
+[connection signal="pressed" from="VBoxContainer/Exit" to="." method="_on_exit_pressed"]
