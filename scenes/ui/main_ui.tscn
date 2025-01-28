@@ -1,0 +1,47 @@
+[gd_scene load_steps=2 format=3 uid="uid://bq0nfwqu4pmxi"]
+
+[ext_resource type="Script" path="res://scenes/ui/main_ui.gd" id="1_uaasp"]
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_uaasp")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -72.5
+offset_top = -50.5
+offset_right = 72.5
+offset_bottom = 50.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RunServer" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Start server"
+
+[node name="EnterIP" type="LineEdit" parent="VBoxContainer"]
+layout_mode = 2
+text = "127.0.0.1"
+alignment = 1
+
+[node name="NameInput" type="LineEdit" parent="VBoxContainer"]
+layout_mode = 2
+placeholder_text = "Name"
+alignment = 1
+
+[node name="ConnectToServer" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+text = "Connect to server"
+
+[connection signal="pressed" from="VBoxContainer/RunServer" to="." method="_on_run_server_pressed"]
+[connection signal="pressed" from="VBoxContainer/ConnectToServer" to="." method="_on_connect_to_server_pressed"]
