@@ -7,10 +7,11 @@ var player_name: String = "Player"
 
 @rpc("any_peer")
 func set_player_name(new_name: String):
+	if player_name == new_name:
+		return # Если имя не изменилось, ничего не делаем
 	player_name = new_name
 	name_label.text = new_name
-	print("Установлено имя для игрока: ", player_name, " (Authority: ", get_multiplayer_authority(), ")")
-
+	print("set_player_name вызван. Новое имя:", new_name, " (Authority: ", get_multiplayer_authority(), ")")
 
 @rpc("any_peer", "unreliable")
 func update_state(animation: String, flip_h: bool, position: Vector2):
@@ -21,8 +22,14 @@ func update_state(animation: String, flip_h: bool, position: Vector2):
 		self.position = position
 
 func _ready():
-	name_label.text = player_name
+	if player_name != "Player":
+		name_label.text = player_name
 	print("Player ready. Authority: ", get_multiplayer_authority(), " Is mine: ", is_multiplayer_authority())
+
+	# Активируем камеру только для локального игрока
+	if is_multiplayer_authority():
+		$Camera2D.make_current()
+		print("Камера активирована для локального игрока.")
 
 func _process(delta):
 	if is_multiplayer_authority(): # Только владелец управляет узлом

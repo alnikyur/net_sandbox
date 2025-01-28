@@ -156,8 +156,8 @@ animations = [{
 "speed": 10.0
 }]
 
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_eanar"]
-height = 48.0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_45glo"]
+size = Vector2(14, 18)
 
 [node name="Player" type="CharacterBody2D"]
 script = ExtResource("1_4agke")
@@ -169,14 +169,17 @@ animation = &"walk"
 frame_progress = 0.427682
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-shape = SubResource("CapsuleShape2D_eanar")
+position = Vector2(-1, 3)
+shape = SubResource("RectangleShape2D_45glo")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 texture_filter = 1
 zoom = Vector2(3, 3)
 
 [node name="NameLabel" type="Label" parent="."]
-offset_left = -16.0
+texture_filter = 1
+offset_left = -64.0
 offset_top = -32.0
-offset_right = 24.0
+offset_right = 64.0
 offset_bottom = -9.0
+horizontal_alignment = 1
