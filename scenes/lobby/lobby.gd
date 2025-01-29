@@ -46,6 +46,8 @@ func await_connection():
 	print("Успешно подключено к серверу!")
 	print("Отправляем имя на сервер:", Global.player_name)
 	rpc_id(1, "register_player_name", multiplayer.get_unique_id(), Global.player_name)
+	# Запрашиваем состояние музыки у сервера
+	rpc_id(1, "request_music_state")
 
 func _on_player_connected(id):
 	if multiplayer.is_server():
@@ -120,14 +122,32 @@ func play_next():
 		audio_player.stream = audio_files[current_index] # Устанавливаем следующий аудиофайл
 		audio_player.play() # Запускаем воспроизведение
 		print("Играем файл:", audio_files[current_index])
+
+		# Сообщаем клиентам о новом треке и времени
+		rpc("start_music", current_index, 0.0)
+
 		current_index += 1 # Увеличиваем индекс для следующего файла
 	else:
 		print("Все файлы воспроизведены.")
 		current_index = 0 # Сбрасываем индекс, если нужно повторить цикл
 
+@rpc("any_peer")
+func request_music_state():
+	if multiplayer.is_server():
+		# Отправляем клиенту текущий трек и позицию воспроизведения
+		rpc_id(multiplayer.get_remote_sender_id(), "start_music", current_index - 1, audio_player.get_playback_position())
+
 
 func _on_audio_player_finished():
 	play_next()
+
+@rpc("any_peer")
+func start_music(track_index: int, playback_position: float):
+	if track_index < audio_files.size():
+		audio_player.stream = audio_files[track_index]
+		audio_player.play(playback_position) # Запускаем с указанного момента
+		print("Музыка синхронизирована: Трек", track_index, "Время:", playback_position)
+
 
 func scatter_coins():
 	for i in range(num_coins):

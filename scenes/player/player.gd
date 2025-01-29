@@ -34,8 +34,10 @@ func _ready():
 func _process(delta):
 	if is_multiplayer_authority(): # Только владелец управляет узлом
 		var input_direction = Vector2.ZERO
-		input_direction.x = Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left")
-		input_direction.y = Input.get_action_strength("ui_down") - Input.get_action_strength("ui_up")
+		input_direction.x += Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left")
+		input_direction.y += Input.get_action_strength("ui_down") - Input.get_action_strength("ui_up")
+		input_direction.x += Input.get_action_strength("D") - Input.get_action_strength("A")
+		input_direction.y += Input.get_action_strength("S") - Input.get_action_strength("W")
 		input_direction = input_direction.normalized()
 
 		velocity = input_direction * move_speed
@@ -44,7 +46,9 @@ func _process(delta):
 		# Управляем анимацией
 		if input_direction != Vector2.ZERO:
 			$AnimatedSprite2D.play("walk")
-			$AnimatedSprite2D.flip_h = input_direction.x < 0
+			# Меняем flip_h только при движении влево или вправо
+			if input_direction.x != 0:
+				$AnimatedSprite2D.flip_h = input_direction.x < 0
 		else:
 			$AnimatedSprite2D.play("idle")
 
