@@ -1343,4 +1343,18 @@ layer_1/tile_data = PackedInt32Array(4194297, 196609, 8, 1441786, 196609, 8, 222
 [node name="AudioPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("5_dr1s3")
 
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="CoinLabel" type="Label" parent="CanvasLayer"]
+offset_left = 64.0
+offset_top = 64.0
+offset_right = 96.0
+offset_bottom = 88.0
+
+[node name="CoinLast" type="Label" parent="CanvasLayer"]
+offset_left = 256.0
+offset_top = 64.0
+offset_right = 288.0
+offset_bottom = 88.0
+
 [connection signal="finished" from="AudioPlayer" to="." method="_on_audio_player_finished"]

@@ -26,10 +26,8 @@ size = Vector2i(115, 100)
 visible = true
 
 [node name="Label" type="Label" parent="Popup"]
-modulate = Color(0.822539, 0.14641, 0.174151, 1)
 offset_right = 40.0
 offset_bottom = 23.0
-theme_override_font_sizes/font_size = 50
 horizontal_alignment = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]

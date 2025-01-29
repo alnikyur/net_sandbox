@@ -7,8 +7,12 @@ extends Node2D
 @export var player_scene: PackedScene # Сцена игрока
 @onready var players = {} # Хранит игроков (id → узел игрока)
 @onready var audio_player = $AudioPlayer
+@onready var coin_label = $CanvasLayer/CoinLabel
+@onready var coin_last = $CanvasLayer/CoinLast
+
 
 var current_index = randf()
+var coins_collected: int = 0
 
 var audio_files = [
 	preload("res://assets/sounds/bit-beats-1-168243.mp3"),
@@ -159,6 +163,18 @@ func scatter_coins():
 		var random_y = randf() * field_size.y
 		coin.position = Vector2(random_x, random_y)
 		
+		coin.connect("coin_picked", Callable(self, "_on_coin_picked"))
+		
 		# Добавляем монетку в сцену
 		add_child(coin)
 		print("Монетка добавлена на позицию:", coin.position)
+
+func _on_coin_picked(amount: int):
+	coins_collected += amount
+	num_coins -= 1 # Уменьшаем количество оставшихся монет
+	update_coin_labels()
+	print("Монета собрана! Всего монет:", coins_collected, "Осталось:", num_coins)
+
+func update_coin_labels():
+	coin_label.text = "Монеты: " + str(coins_collected)
+	coin_last.text = "Осталось монет: " + str(num_coins)
