@@ -11,6 +11,27 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_uaasp")
 
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.372619, 0.32542, 0.600761, 1)
+
+[node name="Popup" type="Popup" parent="."]
+transparent_bg = true
+size = Vector2i(115, 100)
+visible = true
+
+[node name="Label" type="Label" parent="Popup"]
+modulate = Color(0.822539, 0.14641, 0.174151, 1)
+offset_right = 40.0
+offset_bottom = 23.0
+theme_override_font_sizes/font_size = 50
+horizontal_alignment = 1
+
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 8
@@ -46,13 +67,6 @@ text = "Connect to server"
 [node name="Exit" type="Button" parent="VBoxContainer"]
 layout_mode = 2
 text = "Exit"
-
-[node name="Popup" type="Popup" parent="."]
-visible = true
-
-[node name="Label" type="Label" parent="Popup"]
-offset_right = 40.0
-offset_bottom = 23.0
 
 [connection signal="pressed" from="VBoxContainer/RunServer" to="." method="_on_run_server_pressed"]
 [connection signal="pressed" from="VBoxContainer/ConnectToServer" to="." method="_on_connect_to_server_pressed"]

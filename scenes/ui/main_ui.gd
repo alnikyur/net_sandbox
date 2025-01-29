@@ -19,7 +19,7 @@ func _on_run_server_pressed():
 	var player_name = name_input.text.strip_edges()
 	if player_name.is_empty():
 		print("Введите имя!")
-		show_popup_message("Введите имя!", Vector2(900, 300))
+		show_popup_message("Enter player name!", Vector2(800, 300))
 		return
 
 	Global.player_name = player_name
@@ -31,11 +31,11 @@ func _on_connect_to_server_pressed():
 	var player_name = name_input.text.strip_edges()
 	if ip.is_empty():
 		print("Введите IP-адрес!")
-		show_popup_message("Введите IP-адрес!", Vector2(900, 300))
+		show_popup_message("Enter IP-address!", Vector2(800, 300))
 		return
 	if player_name.is_empty():
 		print("Введите имя!")
-		show_popup_message("Введите имя!", Vector2(900, 300))
+		show_popup_message("Enter player name!", Vector2(800, 300))
 		return
 
 	Global.server_ip = ip

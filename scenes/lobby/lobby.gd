@@ -1,8 +1,8 @@
 extends Node2D
 
 @export var coin_scene: PackedScene
-@export var num_coins: int = 50 # Количество монеток
-@export var field_size: Vector2 = Vector2(1920, 1080) # Размер поля
+@export var num_coins: int = 100 # Количество монеток
+@export var field_size: Vector2 = Vector2(1800, 1000) # Размер поля
 
 @export var player_scene: PackedScene # Сцена игрока
 @onready var players = {} # Хранит игроков (id → узел игрока)
