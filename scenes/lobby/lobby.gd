@@ -71,7 +71,9 @@ func _on_player_connected(id):
 			await get_tree().process_frame # Ждём следующий кадр
 			rpc_id(id, "register_player_name", existing_id, players[existing_id].player_name)
 
-
+		# Отправляем все монеты новому игроку
+		for coin in coins:
+			rpc_id(id, "spawn_coin", coin.position)
 
 func _on_player_disconnected(id):
 	print("Игрок отключился с ID: ", id)
@@ -152,28 +154,64 @@ func start_music(track_index: int, playback_position: float):
 		audio_player.play(playback_position) # Запускаем с указанного момента
 		print("Музыка синхронизирована: Трек", track_index, "Время:", playback_position)
 
+var coins = []
 
 func scatter_coins():
+	if not multiplayer.is_server():
+		return  # Монеты создаются только на сервере
+
 	for i in range(num_coins):
-		# Создаём инстанс монетки
 		var coin = coin_scene.instantiate()
-		
-		# Генерируем случайные координаты в пределах поля
 		var random_x = randf() * field_size.x
 		var random_y = randf() * field_size.y
 		coin.position = Vector2(random_x, random_y)
-		
-		coin.connect("coin_picked", Callable(self, "_on_coin_picked"))
-		
-		# Добавляем монетку в сцену
-		add_child(coin)
-		print("Монетка добавлена на позицию:", coin.position)
 
-func _on_coin_picked(amount: int):
+		coin.connect("coin_picked", Callable(self, "_on_coin_picked").bind(coin))
+
+		add_child(coin)
+		coins.append(coin)  # Сохраняем монету в списке
+		print("Монета добавлена на позицию:", coin.position)
+
+		# Сообщаем клиентам о новой монете
+		rpc("spawn_coin", coin.position)
+
+
+@rpc("authority", "reliable")
+func spawn_coin(position: Vector2):
+	if multiplayer.is_server():
+		return  # Сервер не создает монеты повторно
+
+	var coin = coin_scene.instantiate()
+	coin.position = position
+
+	coin.connect("coin_picked", Callable(self, "_on_coin_picked").bind(coin))
+	add_child(coin)
+	coins.append(coin)
+
+
+@rpc("any_peer", "reliable")
+func _on_coin_picked(amount: int, coin_node: NodePath):
+	if multiplayer.is_server():
+		# Рассылаем клиентам команду удалить монету
+		rpc("remove_coin", coin_node)
+	
+		# Удаляем монету на сервере
+		var coin = get_node_or_null(coin_node)
+		if coin:
+			coins.erase(coin)
+			coin.queue_free()
+
 	coins_collected += amount
-	num_coins -= 1 # Уменьшаем количество оставшихся монет
+	num_coins -= 1
 	update_coin_labels()
-	print("Монета собрана! Всего монет:", coins_collected, "Осталось:", num_coins)
+
+@rpc("authority", "reliable")
+func remove_coin(coin_node: NodePath):
+	var coin = get_node_or_null(coin_node)
+	if coin:
+		coins.erase(coin)
+		coin.queue_free()
+
 
 func update_coin_labels():
 	coin_label.text = "Монеты: " + str(coins_collected)
