@@ -21,6 +21,7 @@ var audio_files = [
 ]
 
 func _ready():
+	chat_ui.message_sent.connect(_on_message_sent)
 	print("coin_label:", coin_label, "coin_last:", coin_last)
 	multiplayer.connect("peer_connected", Callable(self, "_on_player_connected"))
 	multiplayer.connect("peer_disconnected", Callable(self, "_on_player_disconnected"))
@@ -179,8 +180,8 @@ func scatter_coins():
 		var random_y = randf() * field_size.y
 		coin.position = Vector2(random_x, random_y)
 
-		#coin.connect("coin_picked", Callable(self, "_on_coin_picked").bind(coin))
-		coin.connect("coin_picked", Callable(self, "_on_coin_picked"))
+		coin.connect("coin_picked", Callable(self, "_on_coin_picked").bind(coin))
+		#coin.connect("coin_picked", Callable(self, "_on_coin_picked"))
 
 		add_child(coin)
 		coins.append(coin)  # Сохраняем монету в списке
@@ -296,7 +297,31 @@ func update_coin_count(count: int):
 
 
 
-#func update_score(new_score):
-	#$CanvasLayer/CoinLabel.text = "Собрано: " + str(new_score)
+@onready var chat_ui = $ChatUI
+
+@rpc("any_peer", "reliable")
+func send_chat_message(player_id: int, message: String):
+	if players.has(player_id):
+		var player_name = players[player_id].player_name
+		chat_ui.add_message(player_name, message)  # Добавляем сообщение в локальный чат только один раз
+
+		# Проверяем, чтобы сервер не пересылал сообщение дважды
+		if not multiplayer.is_server():
+			return  # Если клиент уже получил сообщение, остановить
+
+		# Если сервер, рассылаем сообщение всем клиентам
+		rpc("send_chat_message", player_id, message)
+
+
+func _on_message_sent(message: String):
+	var player_id = multiplayer.get_unique_id()
+	if multiplayer.is_server():
+		# Если это сервер, сразу обрабатываем сообщение
+		send_chat_message(player_id, message)
+	else:
+		# Если это клиент, отправляем сообщение серверу
+		rpc_id(1, "send_chat_message", player_id, message)
+
+
 
 
