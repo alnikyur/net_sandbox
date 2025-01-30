@@ -182,8 +182,8 @@ func scatter_coins():
 		var random_y = randf() * field_size.y
 		coin.position = Vector2(random_x, random_y)
 
-		coin.connect("coin_picked", Callable(self, "_on_coin_picked").bind(coin))
-		#coin.connect("coin_picked", Callable(self, "_on_coin_picked"))
+		#coin.connect("coin_picked", Callable(self, "_on_coin_picked").bind(coin))
+		coin.connect("coin_picked", Callable(self, "_on_coin_picked"))
 
 		add_child(coin)
 		coins.append(coin)  # Сохраняем монету в списке

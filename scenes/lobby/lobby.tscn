@@ -1380,12 +1380,14 @@ offset_left = 448.0
 offset_top = 40.0
 offset_right = 480.0
 offset_bottom = 64.0
+text = "Собрано монет:"
 
 [node name="CoinLast" type="Label" parent="CanvasLayer"]
-offset_left = 576.0
-offset_top = 40.0
-offset_right = 608.0
-offset_bottom = 64.0
+offset_left = 448.0
+offset_top = 64.0
+offset_right = 582.0
+offset_bottom = 88.0
+text = "Осталось монет:"
 
 [node name="ExitGame" type="Button" parent="CanvasLayer"]
 offset_left = 1624.0
