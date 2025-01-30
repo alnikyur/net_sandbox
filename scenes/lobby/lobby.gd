@@ -4,12 +4,14 @@ extends Node2D
 @export var num_coins: int = 100 # Количество монеток
 @export var field_size: Vector2 = Vector2(1800, 1000) # Размер поля
 
+
 @export var player_scene: PackedScene # Сцена игрока
 @onready var players = {} # Хранит игроков (id → узел игрока)
 @onready var audio_player = $AudioPlayer
 @onready var coin_label = $CanvasLayer/CoinLabel
 @onready var coin_last = $CanvasLayer/CoinLast
 @onready var player_scores = {}
+@onready var exit_game = $CanvasLayer/ExitGame
 
 var current_index = randf()
 var coins_collected: int = 0
@@ -325,3 +327,7 @@ func _on_message_sent(message: String):
 
 
 
+
+
+func _on_exit_game_pressed():
+	get_tree().quit()
