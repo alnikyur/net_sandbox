@@ -5,6 +5,11 @@ extends CharacterBody2D
 
 var player_name: String = "Player"
 
+@export var player_id: int
+@onready var coin_label = $CanvasLayer/CoinLabel
+
+var coins_collected: int = 0  # Личный счетчик монет
+
 @rpc("any_peer")
 func set_player_name(new_name: String):
 	if player_name == new_name:
@@ -54,3 +59,13 @@ func _process(delta):
 
 		# Рассылаем состояние другим клиентам
 		rpc("update_state", $AnimatedSprite2D.animation, $AnimatedSprite2D.flip_h, position)
+
+
+func collect_coin(amount: int):
+	coins_collected += amount
+	print("✅ Игрок", player_id, "подобрал монету! Счетчик:", coins_collected)
+	update_coin_label()
+
+func update_coin_label():
+	if coin_label:
+		coin_label.text = "Собрано монет: " + str(coins_collected)

@@ -5,7 +5,7 @@ extends Area2D
 
 var collected: bool = false
 
-signal coin_picked(amount: int, coin_path: NodePath)
+signal coin_picked(amount: int, player_id: int, coin_node: NodePath)
 
 
 
@@ -22,7 +22,7 @@ func _process(delta):
 func _on_body_entered(body):
 	if body.is_in_group("Player") and not collected:
 		collected = true
-		emit_signal("coin_picked", 1, get_path())  # Передаем путь через get_path()
+		coin_picked.emit(1, body.get_multiplayer_authority(), get_path())
 		
 		# Запускаем звук
 		coin_pickup_sound.play()

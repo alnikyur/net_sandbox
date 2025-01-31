@@ -247,3 +247,9 @@ theme_override_fonts/font = ExtResource("3_nwigd")
 theme_override_font_sizes/font_size = 15
 text = "Maestro"
 horizontal_alignment = 1
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="CoinLabel" type="Label" parent="CanvasLayer"]
+offset_right = 40.0
+offset_bottom = 23.0
