@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://dnbmhkbanue41"]
+[gd_scene load_steps=11 format=3 uid="uid://dnbmhkbanue41"]
 
 [ext_resource type="Script" path="res://scenes/lobby/lobby.gd" id="1_gchuo"]
 [ext_resource type="Texture2D" uid="uid://bdsf2vdf41fyv" path="res://assets/tileset/TX Tileset Grass.png" id="1_suqbc"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://ersllfnch0in" path="res://scenes/items/coin.tscn" id="2_q5v82"]
 [ext_resource type="Texture2D" uid="uid://cjluun41m0atl" path="res://assets/tileset/Dungeon_Tileset.png" id="4_lc3sa"]
 [ext_resource type="AudioStream" uid="uid://ck2rlgxg43xya" path="res://assets/sounds/bit-beats-1-168243.mp3" id="5_dr1s3"]
+[ext_resource type="Script" path="res://scenes/ui/ChatUI.gd" id="7_g7usg"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ax6h7"]
 texture = ExtResource("1_suqbc")
@@ -1330,6 +1331,35 @@ script = ExtResource("1_gchuo")
 coin_scene = ExtResource("2_q5v82")
 player_scene = ExtResource("2_bykhq")
 
+[node name="ChatUI" type="CanvasLayer" parent="."]
+script = ExtResource("7_g7usg")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ChatUI"]
+clip_contents = true
+custom_minimum_size = Vector2(300, 200)
+offset_left = 8.0
+offset_top = 16.0
+offset_right = 136.0
+offset_bottom = 136.0
+
+[node name="ChatLabel" type="Label" parent="ChatUI/VBoxContainer"]
+layout_mode = 2
+text = "Chat"
+horizontal_alignment = 1
+autowrap_mode = 1
+
+[node name="ChatInput" type="TextEdit" parent="ChatUI/VBoxContainer"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+placeholder_text = "Input message here"
+scroll_smooth = true
+scroll_fit_content_height = true
+caret_blink = true
+
+[node name="SendButton" type="Button" parent="ChatUI/VBoxContainer"]
+layout_mode = 2
+text = "Send"
+
 [node name="TileMap" type="TileMap" parent="."]
 texture_filter = 1
 position = Vector2(104, 32)
@@ -1346,15 +1376,26 @@ stream = ExtResource("5_dr1s3")
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="CoinLabel" type="Label" parent="CanvasLayer"]
-offset_left = 64.0
-offset_top = 64.0
-offset_right = 96.0
-offset_bottom = 88.0
+offset_left = 448.0
+offset_top = 40.0
+offset_right = 480.0
+offset_bottom = 64.0
+text = "Собрано монет:"
 
 [node name="CoinLast" type="Label" parent="CanvasLayer"]
-offset_left = 256.0
+offset_left = 448.0
 offset_top = 64.0
-offset_right = 288.0
+offset_right = 582.0
 offset_bottom = 88.0
+text = "Осталось монет:"
 
+[node name="ExitGame" type="Button" parent="CanvasLayer"]
+offset_left = 1624.0
+offset_top = 32.0
+offset_right = 1928.0
+offset_bottom = 63.0
+text = "Quit"
+
+[connection signal="pressed" from="ChatUI/VBoxContainer/SendButton" to="ChatUI" method="_on_send_button_pressed"]
 [connection signal="finished" from="AudioPlayer" to="." method="_on_audio_player_finished"]
+[connection signal="pressed" from="CanvasLayer/ExitGame" to="." method="_on_exit_game_pressed"]
