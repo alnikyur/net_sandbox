@@ -252,7 +252,7 @@ func _on_coin_picked(amount: int, player_id: int, coin_node: NodePath):
 	rpc("update_player_score", player_id, player_scores[player_id])
 	rpc("update_coin_count", num_coins)
 
-	# Обновляем UI на сервере, если сервер — тоже игрок
+	# Обновляем UI на сервере
 	_update_local_ui()
 
 	# Удаляем монету у всех клиентов
@@ -263,9 +263,6 @@ func _on_coin_picked(amount: int, player_id: int, coin_node: NodePath):
 	if coin:
 		coins.erase(coin)
 		coin.queue_free()
-
-
-
 
 @rpc("authority", "reliable")
 func remove_coin(coin_node: NodePath):
@@ -286,9 +283,10 @@ func update_player_score(id: int, score: int):
 		player_scores[id] = score
 		print("🔄 Счет игрока ID:", id, " → ", score)
 
-		# Гарантируем обновление UI на сервере
-		if id == multiplayer.get_unique_id() or multiplayer.is_server():
+		# Если это локальный игрок (клиент), обновляем UI
+		if id == multiplayer.get_unique_id():
 			_update_local_ui()
+
 
 
 
@@ -297,8 +295,9 @@ func update_coin_count(count: int):
 	num_coins = count
 	print("🔄 Обновление общего количества монет:", num_coins)
 
-	# Гарантируем обновление UI на сервере
+	# Гарантируем обновление UI на клиенте и сервере
 	_update_local_ui()
+
 
 
 
@@ -306,9 +305,16 @@ func _update_local_ui():
 	# Если сервер — обновляем UI напрямую
 	if multiplayer.is_server():
 		print("🔄 Обновление UI на сервере")
-		var server_score = player_scores.get(server_id, 0)  # Используем `server_id`
+		var server_score = player_scores.get(multiplayer.get_unique_id(), 0)
 		coin_label.text = "Собрано монет: " + str(server_score)
 		coin_last.text = "Осталось монет: " + str(num_coins)
+
+	# Если клиент — обновляем UI только для локального игрока
+	elif multiplayer.get_unique_id() in player_scores:
+		var client_score = player_scores[multiplayer.get_unique_id()]
+		coin_label.text = "Собрано монет: " + str(client_score)
+		coin_last.text = "Осталось монет: " + str(num_coins)
+
 
 
 
