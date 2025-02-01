@@ -1,6 +1,6 @@
 extends CharacterBody2D
 
-@export var move_speed: float = 250.0
+@export var move_speed: float = 200.0
 @onready var name_label = $NameLabel # Узел для отображения имени
 
 var player_name: String = "Player"

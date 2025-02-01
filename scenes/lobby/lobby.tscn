@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://dnbmhkbanue41"]
+[gd_scene load_steps=12 format=3 uid="uid://dnbmhkbanue41"]
 
 [ext_resource type="Script" path="res://scenes/lobby/lobby.gd" id="1_gchuo"]
 [ext_resource type="Texture2D" uid="uid://bdsf2vdf41fyv" path="res://assets/tileset/TX Tileset Grass.png" id="1_suqbc"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://cjluun41m0atl" path="res://assets/tileset/Dungeon_Tileset.png" id="4_lc3sa"]
 [ext_resource type="AudioStream" uid="uid://ck2rlgxg43xya" path="res://assets/sounds/bit-beats-1-168243.mp3" id="5_dr1s3"]
 [ext_resource type="Script" path="res://scenes/ui/ChatUI.gd" id="7_g7usg"]
+[ext_resource type="FontFile" uid="uid://cvjgxxq5g2jb1" path="res://assets/fonts/Monocraft.otf" id="8_kgjnn"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ax6h7"]
 texture = ExtResource("1_suqbc")
@@ -1376,17 +1377,23 @@ stream = ExtResource("5_dr1s3")
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="CoinLabel" type="Label" parent="CanvasLayer"]
-offset_left = 448.0
+texture_filter = 1
+offset_left = 896.0
 offset_top = 40.0
-offset_right = 480.0
+offset_right = 1024.0
 offset_bottom = 64.0
+theme_override_fonts/font = ExtResource("8_kgjnn")
+theme_override_font_sizes/font_size = 20
 text = "Собрано монет:"
 
 [node name="CoinLast" type="Label" parent="CanvasLayer"]
-offset_left = 448.0
+texture_filter = 1
+offset_left = 896.0
 offset_top = 64.0
-offset_right = 582.0
+offset_right = 1030.0
 offset_bottom = 88.0
+theme_override_fonts/font = ExtResource("8_kgjnn")
+theme_override_font_sizes/font_size = 20
 text = "Осталось монет:"
 
 [node name="ExitGame" type="Button" parent="CanvasLayer"]
