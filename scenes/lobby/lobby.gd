@@ -1,7 +1,7 @@
 extends Node2D
 
 @export var coin_scene: PackedScene
-@export var num_coins: int = 10 # Количество монеток
+@export var num_coins: int = 100 # Количество монеток
 @export var field_size: Vector2 = Vector2(1900, 1050) # Размер поля
 
 
