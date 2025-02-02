@@ -17,6 +17,8 @@ var local_coins_collected: int = 0
 var current_index = randf()
 var coins_collected: int = 0
 var server_id = 1
+var remaining_tracks = []  # Список оставшихся треков
+var current_track = -1
 
 var audio_files = [
 	preload("res://assets/sounds/bit-beats-1-168243.mp3"),
@@ -30,6 +32,7 @@ func _ready():
 	multiplayer.connect("peer_connected", Callable(self, "_on_player_connected"))
 	multiplayer.connect("peer_disconnected", Callable(self, "_on_player_disconnected"))
 	setup_network()
+	reset_playlist()
 	play_next()
 	scatter_coins()
 
@@ -137,19 +140,26 @@ func register_player_name(id, name):
 		Global.player_name = name
 		print("Локальный игрок обновил своё имя на:", name)
 
+func reset_playlist():
+	# Создаем новый список треков и перемешиваем его
+	remaining_tracks = audio_files.duplicate()
+	remaining_tracks.shuffle()
+
 func play_next():
-	if current_index < audio_files.size():
-		audio_player.stream = audio_files[current_index] # Устанавливаем следующий аудиофайл
-		audio_player.play() # Запускаем воспроизведение
-		print("Играем файл:", audio_files[current_index])
+	# Если все треки были сыграны – обновляем плейлист
+	if remaining_tracks.is_empty():
+		reset_playlist()
+	
+	# Берем следующий трек
+	var track = remaining_tracks.pop_front()
+	current_track = audio_files.find(track)  # Запоминаем его индекс в основном списке
 
-		# Сообщаем клиентам о новом треке и времени
-		rpc("start_music", current_index, 0.0)
+	audio_player.stream = track  # Устанавливаем аудиофайл
+	audio_player.play()  # Воспроизводим
+	print("🎵 Играем файл:", track)
 
-		current_index += 1 # Увеличиваем индекс для следующего файла
-	else:
-		print("Все файлы воспроизведены.")
-		current_index = 0 # Сбрасываем индекс, если нужно повторить цикл
+	# Сообщаем клиентам о новом треке
+	rpc("start_music", current_track, 0.0)
 
 @rpc("any_peer")
 func request_music_state():
