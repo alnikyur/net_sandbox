@@ -292,6 +292,21 @@ func _on_coin_picked(amount: int, player_id: int, coin_node: NodePath):
 	if num_coins == 0:
 		display_message("Все монеты собраны!")
 		rpc("display_message", "Все монеты собраны!")  # Сообщение всем игрокам
+		# Находим победителя
+		var max_coins = -1
+		var winner_id = null
+		for id in player_scores.keys():
+			if player_scores[id] > max_coins:
+				max_coins = player_scores[id]
+				winner_id = id
+
+		if winner_id != null:
+			var winner_name = players[winner_id].player_name if players.has(winner_id) else "Неизвестный"
+			var message = "🏆 Победитель: " + winner_name + " с " + str(max_coins) + " монетами!"
+			
+			print(message) # Лог на сервере
+			display_winner(message)
+			rpc("display_winner", message) # Отправляем всем клиентам
 
 	# Обновляем UI на сервере
 	_update_local_ui()
@@ -304,6 +319,20 @@ func _on_coin_picked(amount: int, player_id: int, coin_node: NodePath):
 	if coin:
 		coins.erase(coin)
 		coin.queue_free()
+
+@rpc("any_peer", "reliable")
+func display_winner(message: String):
+	print("🏆", message)  # Вывод в консоль (для отладки)
+	
+	# Проверяем, есть ли UI элемент для отображения сообщений
+	if has_node("CanvasLayer/MessageLabel"):
+		var message_label = get_node("CanvasLayer/MessageLabel")
+		message_label.text = message
+		message_label.visible = true  # Показываем сообщение
+
+	# Для сервера тоже нужно обновить UI
+	coin_label.text = message
+
 
 @rpc("any_peer", "reliable")
 func display_message(text: String):

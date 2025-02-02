@@ -1410,6 +1410,7 @@ offset_bottom = 63.0
 text = "Quit"
 
 [node name="MessageLabel" type="Label" parent="CanvasLayer"]
+visible = false
 modulate = Color(0, 0.760784, 0.356863, 1)
 texture_filter = 1
 anchors_preset = 8
