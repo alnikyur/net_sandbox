@@ -1,8 +1,8 @@
 extends Node2D
 
 @export var coin_scene: PackedScene
-@export var num_coins: int = 100 # Количество монеток
-@export var field_size: Vector2 = Vector2(1800, 1000) # Размер поля
+@export var num_coins: int = 10 # Количество монеток
+@export var field_size: Vector2 = Vector2(1900, 1050) # Размер поля
 
 
 @export var player_scene: PackedScene # Сцена игрока
@@ -183,19 +183,45 @@ func scatter_coins():
 	if not multiplayer.is_server():
 		return  # Монеты создаются только на сервере
 
-	for i in range(num_coins):
-		var coin = coin_scene.instantiate()
-		var random_x = randf() * field_size.x
-		var random_y = randf() * field_size.y
-		coin.position = Vector2(random_x, random_y)
+	var space_state = get_world_2d().direct_space_state
+	var max_attempts = 10  # Количество попыток поиска свободного места
 
-		# 📌 Передаем монету игроку при подборе
+	for i in range(num_coins):
+		var spawn_position = Vector2.ZERO
+		var attempts = 0
+
+		while attempts < max_attempts:
+			# Генерируем случайную позицию
+			var random_x = randf() * field_size.x
+			var random_y = randf() * field_size.y
+			spawn_position = Vector2(random_x, random_y)
+
+			# Проверяем коллизию в этом месте
+			var query = PhysicsShapeQueryParameters2D.new()
+			query.shape = CircleShape2D.new()
+			query.shape.radius = 8  # Радиус монеты
+			query.transform = Transform2D(0, spawn_position)
+
+			var result = space_state.intersect_shape(query)
+
+			# Если результат пуст, значит, место свободно
+			if result.is_empty():
+				break
+
+			attempts += 1
+
+		# Если удалось найти свободное место, создаем монету
+		var coin = coin_scene.instantiate()
+		coin.position = spawn_position
+
+		# Подключаем сигнал, чтобы сервер мог обработать сбор монеты
 		coin.connect("coin_picked", Callable(self, "_on_coin_picked"))
 
 		add_child(coin)
 		coins.append(coin)
 
 		rpc("spawn_coin", coin.position)
+
 
 
 @rpc("authority", "reliable")
@@ -262,6 +288,11 @@ func _on_coin_picked(amount: int, player_id: int, coin_node: NodePath):
 	rpc("update_player_score", player_id, player_scores[player_id])
 	rpc("update_coin_count", num_coins)
 
+	# Проверяем, все ли монеты собраны
+	if num_coins == 0:
+		display_message("Все монеты собраны!")
+		rpc("display_message", "Все монеты собраны!")  # Сообщение всем игрокам
+
 	# Обновляем UI на сервере
 	_update_local_ui()
 
@@ -273,6 +304,17 @@ func _on_coin_picked(amount: int, player_id: int, coin_node: NodePath):
 	if coin:
 		coins.erase(coin)
 		coin.queue_free()
+
+@rpc("any_peer", "reliable")
+func display_message(text: String):
+	print("📢", text)  # Вывод в консоль (для отладки)
+	
+	# Проверяем, есть ли UI элемент для отображения сообщений
+	if has_node("CanvasLayer/MessageLabel"):
+		var message_label = get_node("CanvasLayer/MessageLabel")
+		message_label.text = text
+		message_label.visible = true  # Показываем сообщение
+
 
 @rpc("authority", "reliable")
 func remove_coin(coin_node: NodePath):
