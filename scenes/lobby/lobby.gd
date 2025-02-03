@@ -2,7 +2,7 @@ extends Node2D
 
 @export var coin_scene: PackedScene
 @export var num_coins: int = 100 # Количество монеток
-@export var field_size: Vector2 = Vector2(1800, 1000) # Размер поля
+@export var field_size: Vector2 = Vector2(1900, 1050) # Размер поля
 
 
 @export var player_scene: PackedScene # Сцена игрока
@@ -17,6 +17,8 @@ var local_coins_collected: int = 0
 var current_index = randf()
 var coins_collected: int = 0
 var server_id = 1
+var remaining_tracks = []  # Список оставшихся треков
+var current_track = -1
 
 var audio_files = [
 	preload("res://assets/sounds/bit-beats-1-168243.mp3"),
@@ -30,6 +32,7 @@ func _ready():
 	multiplayer.connect("peer_connected", Callable(self, "_on_player_connected"))
 	multiplayer.connect("peer_disconnected", Callable(self, "_on_player_disconnected"))
 	setup_network()
+	reset_playlist()
 	play_next()
 	scatter_coins()
 
@@ -137,19 +140,26 @@ func register_player_name(id, name):
 		Global.player_name = name
 		print("Локальный игрок обновил своё имя на:", name)
 
+func reset_playlist():
+	# Создаем новый список треков и перемешиваем его
+	remaining_tracks = audio_files.duplicate()
+	remaining_tracks.shuffle()
+
 func play_next():
-	if current_index < audio_files.size():
-		audio_player.stream = audio_files[current_index] # Устанавливаем следующий аудиофайл
-		audio_player.play() # Запускаем воспроизведение
-		print("Играем файл:", audio_files[current_index])
+	# Если все треки были сыграны – обновляем плейлист
+	if remaining_tracks.is_empty():
+		reset_playlist()
+	
+	# Берем следующий трек
+	var track = remaining_tracks.pop_front()
+	current_track = audio_files.find(track)  # Запоминаем его индекс в основном списке
 
-		# Сообщаем клиентам о новом треке и времени
-		rpc("start_music", current_index, 0.0)
+	audio_player.stream = track  # Устанавливаем аудиофайл
+	audio_player.play()  # Воспроизводим
+	print("🎵 Играем файл:", track)
 
-		current_index += 1 # Увеличиваем индекс для следующего файла
-	else:
-		print("Все файлы воспроизведены.")
-		current_index = 0 # Сбрасываем индекс, если нужно повторить цикл
+	# Сообщаем клиентам о новом треке
+	rpc("start_music", current_track, 0.0)
 
 @rpc("any_peer")
 func request_music_state():
@@ -173,19 +183,45 @@ func scatter_coins():
 	if not multiplayer.is_server():
 		return  # Монеты создаются только на сервере
 
-	for i in range(num_coins):
-		var coin = coin_scene.instantiate()
-		var random_x = randf() * field_size.x
-		var random_y = randf() * field_size.y
-		coin.position = Vector2(random_x, random_y)
+	var space_state = get_world_2d().direct_space_state
+	var max_attempts = 10  # Количество попыток поиска свободного места
 
-		# 📌 Передаем монету игроку при подборе
+	for i in range(num_coins):
+		var spawn_position = Vector2.ZERO
+		var attempts = 0
+
+		while attempts < max_attempts:
+			# Генерируем случайную позицию
+			var random_x = randf() * field_size.x
+			var random_y = randf() * field_size.y
+			spawn_position = Vector2(random_x, random_y)
+
+			# Проверяем коллизию в этом месте
+			var query = PhysicsShapeQueryParameters2D.new()
+			query.shape = CircleShape2D.new()
+			query.shape.radius = 8  # Радиус монеты
+			query.transform = Transform2D(0, spawn_position)
+
+			var result = space_state.intersect_shape(query)
+
+			# Если результат пуст, значит, место свободно
+			if result.is_empty():
+				break
+
+			attempts += 1
+
+		# Если удалось найти свободное место, создаем монету
+		var coin = coin_scene.instantiate()
+		coin.position = spawn_position
+
+		# Подключаем сигнал, чтобы сервер мог обработать сбор монеты
 		coin.connect("coin_picked", Callable(self, "_on_coin_picked"))
 
 		add_child(coin)
 		coins.append(coin)
 
 		rpc("spawn_coin", coin.position)
+
 
 
 @rpc("authority", "reliable")
@@ -252,6 +288,26 @@ func _on_coin_picked(amount: int, player_id: int, coin_node: NodePath):
 	rpc("update_player_score", player_id, player_scores[player_id])
 	rpc("update_coin_count", num_coins)
 
+	# Проверяем, все ли монеты собраны
+	if num_coins == 0:
+		display_message("Все монеты собраны!")
+		rpc("display_message", "Все монеты собраны!")  # Сообщение всем игрокам
+		# Находим победителя
+		var max_coins = -1
+		var winner_id = null
+		for id in player_scores.keys():
+			if player_scores[id] > max_coins:
+				max_coins = player_scores[id]
+				winner_id = id
+
+		if winner_id != null:
+			var winner_name = players[winner_id].player_name if players.has(winner_id) else "Неизвестный"
+			var message = "🏆 Победитель: " + winner_name + " с " + str(max_coins) + " монетами!"
+			
+			print(message) # Лог на сервере
+			display_winner(message)
+			rpc("display_winner", message) # Отправляем всем клиентам
+
 	# Обновляем UI на сервере
 	_update_local_ui()
 
@@ -263,6 +319,31 @@ func _on_coin_picked(amount: int, player_id: int, coin_node: NodePath):
 	if coin:
 		coins.erase(coin)
 		coin.queue_free()
+
+@rpc("any_peer", "reliable")
+func display_winner(message: String):
+	print("🏆", message)  # Вывод в консоль (для отладки)
+	
+	# Проверяем, есть ли UI элемент для отображения сообщений
+	if has_node("CanvasLayer/MessageLabel"):
+		var message_label = get_node("CanvasLayer/MessageLabel")
+		message_label.text = message
+		message_label.visible = true  # Показываем сообщение
+
+	# Для сервера тоже нужно обновить UI
+	coin_label.text = message
+
+
+@rpc("any_peer", "reliable")
+func display_message(text: String):
+	print("📢", text)  # Вывод в консоль (для отладки)
+	
+	# Проверяем, есть ли UI элемент для отображения сообщений
+	if has_node("CanvasLayer/MessageLabel"):
+		var message_label = get_node("CanvasLayer/MessageLabel")
+		message_label.text = text
+		message_label.visible = true  # Показываем сообщение
+
 
 @rpc("authority", "reliable")
 func remove_coin(coin_node: NodePath):
