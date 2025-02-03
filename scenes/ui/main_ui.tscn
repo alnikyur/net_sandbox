@@ -93,6 +93,8 @@ text = "Connect"
 
 [node name="NameInput" type="LineEdit" parent="ClientNetworking/CanvasLayer/VBoxContainer"]
 layout_mode = 2
+placeholder_text = "Player Name"
+alignment = 1
 
 [connection signal="pressed" from="VBoxContainer/RunServer" to="." method="_on_run_server_pressed"]
 [connection signal="pressed" from="VBoxContainer/ConnectToServer" to="." method="_on_connect_to_server_pressed"]

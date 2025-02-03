@@ -36,4 +36,15 @@ func _check_for_server():
 
 
 func _on_connect_to_server_pressed():
-	pass # Replace with function body.
+	var ip = ip_input.text.strip_edges()
+	var player_name = name_input.text.strip_edges()
+	
+	print("🔌 Подключаемся к серверу:", ip)
+
+	Global.server_ip = ip
+	Global.player_name = player_name
+	Global.is_server = false  # Устанавливаем, что это клиент
+	
+	# Меняем сцену на "lobby"
+	get_tree().change_scene_to_file("res://scenes/lobby/lobby.tscn")
+
