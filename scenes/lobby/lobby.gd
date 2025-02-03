@@ -4,7 +4,6 @@ extends Node2D
 @export var num_coins: int = 100 # Количество монеток
 @export var field_size: Vector2 = Vector2(1900, 1050) # Размер поля
 
-
 @export var player_scene: PackedScene # Сцена игрока
 @onready var players = {} # Хранит игроков (id → узел игрока)
 @onready var audio_player = $AudioPlayer
@@ -20,6 +19,10 @@ var server_id = 1
 var remaining_tracks = []  # Список оставшихся треков
 var current_track = -1
 
+const BROADCAST_PORT = 54545
+var udp_server = PacketPeerUDP.new()
+var server_ip = "0.0.0.0"
+
 var audio_files = [
 	preload("res://assets/sounds/bit-beats-1-168243.mp3"),
 	preload("res://assets/sounds/falselyclaimed-bit-beats-3-168873.mp3"),
@@ -27,6 +30,7 @@ var audio_files = [
 ]
 
 func _ready():
+	start_broadcast()
 	chat_ui.message_sent.connect(_on_message_sent)
 	print("coin_label:", coin_label, "coin_last:", coin_last)
 	multiplayer.connect("peer_connected", Callable(self, "_on_player_connected"))
@@ -36,12 +40,42 @@ func _ready():
 	play_next()
 	scatter_coins()
 
+func start_broadcast():
+	print("📡 Начинаем рассылку UDP broadcast...")
+	udp_server.set_broadcast_enabled(true)
+
+	var timer = Timer.new()
+	timer.wait_time = 3.0
+	timer.autostart = true
+	timer.timeout.connect(_send_broadcast)
+	add_child(timer)
+
+func _send_broadcast():
+	var peer = PacketPeerUDP.new()
+	peer.set_broadcast_enabled(true)
+	peer.connect_to_host("255.255.255.255", BROADCAST_PORT)
+	
+	var local_ip = get_local_ip()
+	var message = "GODOT_SERVER_AVAILABLE:" + local_ip
+	peer.put_packet(message.to_utf8_buffer())
+	print("📡 Отправлен broadcast: ", message)
+
+func get_local_ip():
+	var addresses = IP.get_local_addresses()
+	for addr in addresses:
+		if addr.begins_with("192.168.") or addr.begins_with("10.") or addr.begins_with("172.16."):
+			return addr  # Используем локальную сеть Wi-Fi/LAN
+	print("⚠️ Не найден локальный IP в диапазоне 192.168.x.x! Используется:", addresses[0])
+	return addresses[0]  # Возвращаем первый адрес, если нет других
+
+
 func setup_network():
 	if Global.is_server:
 		var server = ENetMultiplayerPeer.new()
 		server.create_server(12345)
 		multiplayer.multiplayer_peer = server
 		print("Сервер запущен на порту 12345!")
+		print("🌍 Сервер работает по адресу:", server_ip)
 		# Создаём игрока для сервера
 		spawn_player(multiplayer.get_unique_id())
 		players[multiplayer.get_unique_id()].set_player_name(Global.player_name)

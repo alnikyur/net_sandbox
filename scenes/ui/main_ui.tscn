@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://bq0nfwqu4pmxi"]
+[gd_scene load_steps=3 format=3 uid="uid://bq0nfwqu4pmxi"]
 
 [ext_resource type="Script" path="res://scenes/ui/main_ui.gd" id="1_uaasp"]
+[ext_resource type="Script" path="res://scenes/ui/Client.gd" id="2_gxoyh"]
 
 [node name="Control" type="Control"]
 layout_mode = 3
@@ -66,6 +67,34 @@ text = "Connect to server"
 layout_mode = 2
 text = "Exit"
 
+[node name="ClientNetworking" type="Node" parent="."]
+script = ExtResource("2_gxoyh")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="ClientNetworking"]
+
+[node name="Popup" type="Popup" parent="ClientNetworking/CanvasLayer"]
+
+[node name="Label" type="Label" parent="ClientNetworking/CanvasLayer/Popup"]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ClientNetworking/CanvasLayer"]
+offset_left = 880.0
+offset_top = 272.0
+offset_right = 1037.0
+offset_bottom = 389.0
+
+[node name="EnterIP" type="LineEdit" parent="ClientNetworking/CanvasLayer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ConnectToServer" type="Button" parent="ClientNetworking/CanvasLayer/VBoxContainer"]
+layout_mode = 2
+text = "Connect"
+
+[node name="NameInput" type="LineEdit" parent="ClientNetworking/CanvasLayer/VBoxContainer"]
+layout_mode = 2
+
 [connection signal="pressed" from="VBoxContainer/RunServer" to="." method="_on_run_server_pressed"]
 [connection signal="pressed" from="VBoxContainer/ConnectToServer" to="." method="_on_connect_to_server_pressed"]
 [connection signal="pressed" from="VBoxContainer/Exit" to="." method="_on_exit_pressed"]
+[connection signal="pressed" from="ClientNetworking/CanvasLayer/VBoxContainer/ConnectToServer" to="ClientNetworking" method="_on_connect_to_server_pressed"]
